@@ -1,18 +1,24 @@
-import google.generativeai as genai
+"""Lead qualification using Groq's Llama model (OpenAI-compatible API)."""
+
 import json
 import os
+from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configure Gemini
-genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-model = genai.GenerativeModel('gemini-2.0-flash')
+client = OpenAI(
+    api_key=os.getenv("GROQ_API_KEY"),
+    base_url="https://api.groq.com/openai/v1",
+)
+
+# Groq's fast open-source Llama model
+MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
 
 
 def qualify_lead(message: str) -> dict:
-    """Qualify lead using Gemini AI"""
-    
+    """Qualify lead using Groq's Llama model."""
+
     prompt = f"""You are a lead qualification assistant for a financial advisory service in India.
 
 Analyze this lead's message and extract information. Respond with ONLY a JSON object:
@@ -32,20 +38,24 @@ Scoring guide:
 
 Lead's message: "{message}"
 
-Return ONLY the JSON object.
-"""
-    
+Return ONLY the JSON object."""
+
     try:
-        response = model.generate_content(prompt)
-        text = response.text.strip().replace('```json', '').replace('```', '').strip()
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.1,
+        )
+        text = response.choices[0].message.content.strip()
+        text = text.replace("```json", "").replace("```", "").strip()
         result = json.loads(text)
         return result
-        
+
     except Exception as e:
-        print(f"Gemini API error: {e}")
+        print(f"Groq API error: {e}")
         return {
-            'goal': 'unclear',
-            'timeline': 'unclear',
-            'budget_range': 'not_disclosed',
-            'quality_score': 30
+            "goal": "unclear",
+            "timeline": "unclear",
+            "budget_range": "not_disclosed",
+            "quality_score": 30,
         }

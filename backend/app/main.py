@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from . import models, schemas, crud
 from .database import engine, get_db
-from .services.gemini_ai import qualify_lead
+from .services.groq_ai import qualify_lead
 from .services.fraud_detection import detect_fraud
 from .services.email_service import send_hot_lead_notification
 
