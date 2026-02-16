@@ -7,9 +7,47 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 import os
+import re
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+def validate_lead_form(name: str, email: str, phone: str, message: str) -> list[str]:
+    """Validate form fields and return list of error messages. Empty list = all valid."""
+    errors = []
+    
+    # Name: letters and spaces (no digits); 2-255 chars
+    if not name or len(name.strip()) < 2:
+        errors.append("Name must be at least 2 characters")
+    elif len(name) > 255:
+        errors.append("Name must be at most 255 characters")
+    elif re.search(r"\d", name):
+        errors.append("Name cannot contain numbers")
+    
+    # Email: valid email format
+    email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    if not email or not email.strip():
+        errors.append("Email is required")
+    elif not re.match(email_pattern, email.strip()):
+        errors.append("Please enter a valid email address (e.g. user@example.com)")
+    
+    # Phone: only digits, optionally with + prefix; 10-15 digits
+    phone_digits = re.sub(r"\D", "", phone)
+    if not phone or not phone.strip():
+        errors.append("Phone number is required")
+    elif len(phone_digits) < 10:
+        errors.append("Phone number must have at least 10 digits")
+    elif len(phone_digits) > 15:
+        errors.append("Phone number must have at most 15 digits")
+    elif not re.match(r"^[\d\s\-\+\(\)]+$", phone.strip()):
+        errors.append("Phone number can only contain digits, spaces, +, -, or ()")
+    
+    # Message: min 10 chars
+    if not message or len(message.strip()) < 10:
+        errors.append("Message must be at least 10 characters")
+    
+    return errors
 
 API_URL = os.getenv('API_URL', 'http://localhost:8000')
 
@@ -104,12 +142,15 @@ if page == "Lead Capture Form":
         )
         
         st.caption("💡 Be specific about your goals, budget, and timeline for better matching")
+        st.caption("📋 Format: Name (letters only) • Email (valid format) • Phone (10–15 digits) • Message (min 10 chars)")
         
         submitted = st.form_submit_button("🚀 Get Matched with an Advisor", use_container_width=True)
         
         if submitted:
-            if not name or not email or not phone or not message:
-                st.markdown('<div class="error-box">❌ Please fill in all required fields</div>', 
+            validation_errors = validate_lead_form(name, email, phone, message)
+            if validation_errors:
+                error_list = "".join(f"• {e}<br>" for e in validation_errors)
+                st.markdown(f'<div class="error-box">❌ Please correct the following:<br>{error_list}</div>', 
                           unsafe_allow_html=True)
             else:
                 with st.spinner("🤖 AI is analyzing your requirements..."):
