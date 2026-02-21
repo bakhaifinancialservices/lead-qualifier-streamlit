@@ -7,10 +7,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Database URL
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://leadqualifier:dev_password_123@localhost:5432/leads_db"
-)
+#DATABASE_URL = os.getenv(
+#    "DATABASE_URL",
+#    "postgresql://leadqualifier:dev_password_123@localhost:5432/leads_db"
+#)
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable not set")
 
 # Create engine
 engine = create_engine(DATABASE_URL)
