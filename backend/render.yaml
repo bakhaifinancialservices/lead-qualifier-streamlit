@@ -12,4 +12,4 @@ services:
           name: lead-qualifier-db
           property: connectionString
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: 3.11.9
