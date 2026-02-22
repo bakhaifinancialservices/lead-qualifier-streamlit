@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Get API URL from environment or Streamlit secrets
+API_URL = os.getenv('API_URL') or st.secrets.get('API_URL', 'http://localhost:8000')
 
 def validate_lead_form(name: str, email: str, phone: str, message: str) -> list[str]:
     """Validate form fields and return list of error messages. Empty list = all valid."""
