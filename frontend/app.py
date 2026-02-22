@@ -2,6 +2,7 @@
 
 import streamlit as st
 import requests
+import traceback
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -158,8 +159,9 @@ if page == "Lead Capture Form":
                 with st.spinner("🤖 AI is analyzing your requirements..."):
                     try:
                         # Call API
+                        lead_api_url = f"{API_URL}/api/leads"
                         response = requests.post(
-                            f"{API_URL}/api/leads",
+                            lead_api_url,
                             json={
                                 "name": name,
                                 "email": email,
@@ -189,14 +191,26 @@ if page == "Lead Capture Form":
                             st.info("**Next Steps:**\n- An advisor will review your profile\n- You'll receive a call/email within 24 hours\n- They'll discuss your goals and create a customized plan")
                         
                         else:
-                            error_detail = response.json().get('detail', 'Unknown error')
-                            st.markdown(f'<div class="error-box">❌ {error_detail}</div>', 
+                            try:
+                                error_detail = response.json().get('detail', 'Unknown error')
+                            except (ValueError, requests.exceptions.JSONDecodeError):
+                                error_detail = response.text or f"Server returned status {response.status_code} (empty or non-JSON response)"
+                            st.markdown(f'<div class="error-box">❌ **Request URL:** `{lead_api_url}`<br><br>**Error:** {error_detail}</div>',
                                       unsafe_allow_html=True)
                     
                     except requests.exceptions.ConnectionError:
-                        st.error("⚠️ Cannot connect to backend. Make sure FastAPI is running on http://localhost:8000")
+                        st.error(f"⚠️ Cannot connect to backend.\n\n**Request URL:** `{API_URL}/api/leads`\n\nMake sure FastAPI is running.")
+                    except requests.exceptions.Timeout:
+                        st.error(f"⚠️ Request timed out.\n\n**Request URL:** `{API_URL}/api/leads`\n\nBackend took longer than 30 seconds to respond.")
                     except Exception as e:
-                        st.error(f"❌ Error: {str(e)}")
+                        err_msg = f"**Request URL:** `{API_URL}/api/leads`\n\n**Error:** {str(e)}"
+                        try:
+                            if response is not None:
+                                err_msg += f"\n\n**Response status:** {response.status_code}\n**Response body (preview):** {response.text[:500] if response.text else '(empty)'}"
+                        except NameError:
+                            pass
+                        err_msg += f"\n\n**Traceback:**\n```\n{traceback.format_exc()}\n```"
+                        st.error(err_msg)
 
 #============================================
 # PAGE 2: DASHBOARD
