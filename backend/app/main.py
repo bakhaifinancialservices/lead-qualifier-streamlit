@@ -37,9 +37,20 @@ app.add_middleware(
 
 
 @app.get("/")
+@app.head("/")  # ✅ Add HEAD method support for health checks
 def read_root():
-    """Health check endpoint"""
-    return {"status": "healthy", "message": "Lead Qualification API"}
+    """Health check endpoint - supports both GET and HEAD"""
+    return {
+        "status": "healthy",
+        "message": "Lead Qualification API",
+        "version": "1.0.0",
+        "cors": "enabled"
+    }
+
+@app.get("/health")
+def health_check():
+    """Alternative health check endpoint"""
+    return {"status": "ok"}
 
 
 @app.post("/api/leads", response_model=schemas.LeadResponse, status_code=status.HTTP_201_CREATED)
