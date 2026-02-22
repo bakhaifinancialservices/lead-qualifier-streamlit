@@ -9,8 +9,16 @@ from .services.groq_ai import qualify_lead
 from .services.fraud_detection import detect_fraud
 from .services.email_service import send_hot_lead_notification
 
-# Create tables (for development - use Alembic in production)
-models.Base.metadata.create_all(bind=engine)
+# ✅ AUTO-CREATE DATABASE TABLES
+print("=" * 60)
+print("Starting Lead Qualification API")
+print("Initializing database...")
+try:
+    models.Base.metadata.create_all(bind=engine)
+    print("✅ Database tables ready!")
+except Exception as e:
+    print(f"⚠️  Database initialization warning: {e}")
+print("=" * 60)
 
 app = FastAPI(
     title="Lead Qualification API",
