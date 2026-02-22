@@ -29,7 +29,7 @@ app = FastAPI(
 # CORS middleware (allow Streamlit frontend)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify exact origins
+    allow_origins=["https://your-frontend-render-url.onrender.com"],  # In production, specify exact origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -47,10 +47,10 @@ def read_root():
     }
 
 
-@app.get("/health")
-def health_check():
-    """Alternative health check endpoint"""
-    return {"status": "ok"}
+#@app.get("/health")
+#def health_check():
+#    """Alternative health check endpoint"""
+#    return {"status": "ok"}
 
 
 @app.post("/api/leads", response_model=schemas.LeadResponse, status_code=status.HTTP_201_CREATED)
