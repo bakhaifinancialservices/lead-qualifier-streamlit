@@ -36,16 +36,16 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-@app.head("/")  # ✅ Add HEAD method support for health checks
+# ✅ CORRECT WAY - Use api_route with methods parameter
+@app.api_route("/", methods=["GET", "HEAD"])
 def read_root():
     """Health check endpoint - supports both GET and HEAD"""
     return {
         "status": "healthy",
         "message": "Lead Qualification API",
-        "version": "1.0.0",
-        "cors": "enabled"
+        "version": "1.0.0"
     }
+
 
 @app.get("/health")
 def health_check():
